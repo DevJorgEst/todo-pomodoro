@@ -4,8 +4,8 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [tailwindcss(), react()],
-  css: {
-    // Forzamos esbuild para evitar que lightningcss descarte las directivas v4
-    minify: 'esbuild'
+  build: {
+    // CORRECCIÓN CRÍTICA: Forzamos esbuild dentro del bloque build de producción
+    cssMinify: 'esbuild'
   }
 });
