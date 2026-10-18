@@ -61,6 +61,7 @@ describe('usePomodoro › estado inicial', () => {
     expect(result.current.timeLeft).toBe(25 * 60)
     expect(result.current.isRunning).toBe(false)
     expect(result.current.sessionsCompleted).toBe(0)
+    expect(result.current.completedCycles).toBe(0)
     expect(result.current.currentTaskId).toBeNull()
   })
 
@@ -158,6 +159,7 @@ describe('usePomodoro › transiciones de ciclo', () => {
     expect(result.current.mode).toBe('SHORT_BREAK')
     expect(result.current.timeLeft).toBe(SHORT_BREAK_SECONDS)
     expect(result.current.sessionsCompleted).toBe(1)
+    expect(result.current.completedCycles).toBe(1)
     expect(result.current.isRunning).toBe(false)
   })
 
@@ -181,6 +183,7 @@ describe('usePomodoro › transiciones de ciclo', () => {
     expect(result.current.mode).toBe('WORK')
     expect(result.current.timeLeft).toBe(WORK_SECONDS)
     expect(result.current.sessionsCompleted).toBe(1)
+    expect(result.current.completedCycles).toBe(2)
     expect(result.current.isRunning).toBe(false)
   })
 
@@ -302,6 +305,59 @@ describe('usePomodoro › regla de negocio nextPomodoroMode', () => {
   it('cualquier descanso termina en WORK', () => {
     expect(nextPomodoroMode('SHORT_BREAK', 1)).toBe('WORK')
     expect(nextPomodoroMode('LONG_BREAK', 4)).toBe('WORK')
+  })
+})
+
+describe('usePomodoro › pestaña en segundo plano', () => {
+  it('resincroniza contra el reloj al volver: el tick reducido no causa deriva', () => {
+    const { result } = renderPomodoro()
+    act(() => {
+      result.current.start()
+    })
+    const startedAt = Date.now()
+
+    // En segundo plano el navegador reduce setInterval a ~1/min: el reloj
+    // avanza 20 minutos sin que se ejecute ningún tick
+    act(() => {
+      vi.setSystemTime(startedAt + 20 * 60 * 1000)
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    // Quedan exactamente 5 minutos (25 - 20), sin depender de ticks ejecutados
+    expect(result.current.timeLeft).toBe(5 * 60)
+    expect(result.current.isRunning).toBe(true)
+  })
+
+  it('al volver con el ciclo ya vencido aplica la transición completa', () => {
+    const { result } = renderPomodoro()
+    act(() => {
+      result.current.start()
+    })
+    const startedAt = Date.now()
+
+    // 26 minutos en segundo plano: WORK venció hace un minuto
+    act(() => {
+      vi.setSystemTime(startedAt + 26 * 60 * 1000)
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    expect(result.current.mode).toBe('SHORT_BREAK')
+    expect(result.current.timeLeft).toBe(SHORT_BREAK_SECONDS)
+    expect(result.current.sessionsCompleted).toBe(1)
+    expect(result.current.completedCycles).toBe(1)
+    expect(result.current.isRunning).toBe(false)
+  })
+
+  it('no resincroniza ni actúa si el temporizador está detenido', () => {
+    const { result } = renderPomodoro()
+
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    expect(result.current.timeLeft).toBe(WORK_SECONDS)
+    expect(result.current.isRunning).toBe(false)
+    expect(result.current.completedCycles).toBe(0)
   })
 })
 

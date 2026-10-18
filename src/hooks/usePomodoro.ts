@@ -25,6 +25,7 @@ function createInitialState(): PomodoroState {
     mode: 'WORK',
     isRunning: false,
     sessionsCompleted: 0,
+    completedCycles: 0,
     currentTaskId: null,
   }
 }
@@ -41,6 +42,7 @@ function completeCycle(state: PomodoroState): PomodoroState {
     ...state,
     mode,
     sessionsCompleted,
+    completedCycles: state.completedCycles + 1,
     timeLeft: durationOf(mode),
     isRunning: false,
   }
@@ -74,7 +76,7 @@ export function usePomodoro(): UsePomodoroResult {
   useEffect(() => {
     if (!state.isRunning) return
 
-    const id = setInterval(() => {
+    const tick = (): void => {
       const anchor = anchorRef.current
       if (anchor === null) return
 
@@ -93,9 +95,22 @@ export function usePomodoro(): UsePomodoroResult {
       setState((previous) =>
         previous.isRunning ? completeCycle(previous) : previous,
       )
-    }, TICK_MS)
+    }
 
-    return () => clearInterval(id)
+    const id = setInterval(tick, TICK_MS)
+
+    // En segundo plano los navegadores reducen el tick de setInterval a ~1/min.
+    // Al volver a la pestaña se resincroniza al instante contra el reloj, así
+    // que ni el tiempo mostrado ni el fin de ciclo quedan retrasados.
+    const resyncOnVisible = (): void => {
+      if (document.visibilityState === 'visible') tick()
+    }
+    document.addEventListener('visibilitychange', resyncOnVisible)
+
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', resyncOnVisible)
+    }
   }, [state.isRunning])
 
   const start = useCallback(() => {
