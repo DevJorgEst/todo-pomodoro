@@ -1,0 +1,55 @@
+name: CI
+
+# Failsafe: ningún cambio entra en producción sin pasar lint, tests y build
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Un solo pipeline por rama: los pushes más recientes cancelan a los anteriores
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, tests y build de producción
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm (lee "packageManager" de package.json)
+        uses: pnpm/action-setup@v4
+
+      - name: Configurar Node.js 22 con caché de pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Instalar dependencias (lockfile estricto)
+        run: pnpm install --frozen-lockfile
+
+      - name: Auditoría de seguridad (dependencias de producción)
+        run: pnpm audit --prod
+
+      - name: Lint (ESLint + Prettier)
+        run: |
+          pnpm lint
+          pnpm format:check
+
+      - name: Tests (Vitest)
+        run: pnpm test
+
+      - name: Build de producción
+        run: pnpm build
+
+      - name: Publicar artefacto dist/
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist/
+          retention-days: 7
