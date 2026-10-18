@@ -30,14 +30,20 @@ export function TodoFilters({ filter, counts, onChange }: TodoFiltersProps) {
             type="button"
             onClick={() => onChange(option)}
             aria-pressed={isActive}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+            className={`rounded-full px-3 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500 ${
               isActive
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
             }`}
           >
             {TODO_FILTER_LABELS[option]}{' '}
-            <span className={isActive ? 'text-slate-300' : 'text-slate-400'}>
+            <span
+              className={
+                isActive
+                  ? 'text-zinc-300 dark:text-zinc-600'
+                  : 'text-zinc-400 dark:text-zinc-500'
+              }
+            >
               ({counts[FILTER_COUNTS[option]]})
             </span>
           </button>
