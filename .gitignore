@@ -1,4 +1,49 @@
-# Logs
+# ===========================================================================
+# .gitignore — Pomodoro To-Do App
+# Clasificado por ámbito: dependencias, build, tests, secretos, entorno, SO, IDE
+# Referencia: https://git-scm.com/docs/gitignore
+# ===========================================================================
+
+# --- Dependencias ----------------------------------------------------------
+node_modules/
+.pnpm-store/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# --- Build y artefactos de compilación -------------------------------------
+dist/
+dist-ssr/
+build/
+out/
+*.tsbuildinfo
+.vite/
+.vite-cache/
+.eslintcache
+.cache/
+.parcel-cache/
+
+# --- Tests y cobertura -----------------------------------------------------
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+.vitest/
+
+# --- Entorno y secretos (NUNCA versionar) ----------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.json
+
+# --- Logs ------------------------------------------------------------------
 logs
 *.log
 npm-debug.log*
@@ -7,21 +52,30 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# --- Configuración local del proyecto --------------------------------------
 *.local
+opencode.json
 
-# Editor directories and files
+# --- Sistema operativo -----------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+Thumbs.db
+ehthumbs.db
+desktop.ini
+Desktop.ini
+
+# --- Editores y IDE --------------------------------------------------------
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-# Configuración local del entorno OpenCode
-opencode.json
+*.swo
+*~
