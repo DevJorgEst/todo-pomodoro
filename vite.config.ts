@@ -5,6 +5,9 @@ import { defineConfig } from 'vitest/config'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    cssMinify: 'esbuild',
+  },
   test: {
     // Entorno DOM para pruebas de React (Testing Library)
     environment: 'jsdom',
