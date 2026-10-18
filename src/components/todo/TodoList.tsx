@@ -21,14 +21,14 @@ export function TodoList({
 }: TodoListProps) {
   if (todos.length === 0) {
     return (
-      <p className="px-4 py-10 text-center text-sm text-slate-400">
+      <p className="px-4 py-10 text-center text-sm text-zinc-400 dark:text-zinc-500">
         No hay tareas {filterLabel.toLowerCase()}.
       </p>
     )
   }
 
   return (
-    <ul className="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <ul className="divide-y divide-zinc-100 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:divide-zinc-700 dark:border-zinc-700 dark:bg-zinc-800">
       {todos.map((todo) => (
         <TodoItem
           key={todo.id}
