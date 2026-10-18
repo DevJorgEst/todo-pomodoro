@@ -16,6 +16,12 @@ export interface PomodoroState {
   mode: PomodoroMode
   isRunning: boolean
   sessionsCompleted: number
+  /**
+   * Ciclos terminados (trabajo o descanso). A diferencia de
+   * `sessionsCompleted`, crece también al terminar los descansos: es la señal
+   * explícita de "el contador llegó a 00:00" para el feedback auditivo.
+   */
+  completedCycles: number
   /** Tarea del ToDo enlazada a este temporizador, si la hay. */
   currentTaskId: string | null
 }

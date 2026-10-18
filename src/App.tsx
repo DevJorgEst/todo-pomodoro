@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 import { PomodoroTimer } from './components/pomodoro/PomodoroTimer'
 import { TodoFilters } from './components/todo/TodoFilters'
 import { TodoInput } from './components/todo/TodoInput'
@@ -5,7 +7,9 @@ import { TodoList } from './components/todo/TodoList'
 import { TodoStats } from './components/todo/TodoStats'
 import { usePomodoro } from './hooks/usePomodoro'
 import { useTodos } from './hooks/useTodos'
+import { markUserInteraction, playChime } from './utils/feedback'
 import { TODO_FILTER_LABELS } from './types/todo'
+import { buildDocumentTitle, DEFAULT_TITLE } from './utils/title'
 
 export default function App() {
   const {
@@ -25,6 +29,7 @@ export default function App() {
     mode,
     isRunning,
     sessionsCompleted,
+    completedCycles,
     currentTaskId,
     start,
     pause,
@@ -32,6 +37,36 @@ export default function App() {
     linkTask,
     selectMode,
   } = usePomodoro()
+
+  // Título de la pestaña: sigue al temporizador mientras corre y vuelve a la
+  // marca por defecto al pausar o al terminar un ciclo
+  useEffect(() => {
+    document.title = buildDocumentTitle(isRunning, timeLeft, mode)
+
+    return () => {
+      document.title = DEFAULT_TITLE
+    }
+  }, [isRunning, timeLeft, mode])
+
+  // Campanilla exactamente cuando el contador llega a 00:00 (fin de ciclo)
+  const previousCyclesRef = useRef(completedCycles)
+  useEffect(() => {
+    if (completedCycles > previousCyclesRef.current) playChime()
+    previousCyclesRef.current = completedCycles
+  }, [completedCycles])
+
+  // Autoplay: los navegadores solo permiten audio tras un gesto del usuario
+  useEffect(() => {
+    const unlock = () => markUserInteraction()
+
+    window.addEventListener('pointerdown', unlock, { once: true })
+    window.addEventListener('keydown', unlock, { once: true })
+
+    return () => {
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('keydown', unlock)
+    }
+  }, [])
 
   const linkedTaskTitle =
     todos.find((todo) => todo.id === currentTaskId)?.title ?? null

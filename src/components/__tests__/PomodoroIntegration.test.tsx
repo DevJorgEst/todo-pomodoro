@@ -1,16 +1,38 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from '../../App'
+import { markUserInteraction, playChime } from '../../utils/feedback'
+
+// El feedback auditivo se testea en profundidad en utils/__tests__/feedback.test.ts;
+// aquí solo interesa que se dispara en el momento exacto del fin de ciclo.
+vi.mock('../../utils/feedback', () => ({
+  markUserInteraction: vi.fn(),
+  playChime: vi.fn(),
+}))
 
 type User = Awaited<ReturnType<typeof userEvent.setup>>
 
 const NEUTRAL_TASK_MESSAGE = 'Elige una tarea para empezar a cronometrar'
 
+/** Mismos fakes que usa el hook: Date debe viajar con los timers. */
+const TIMER_FAKES = [
+  'Date',
+  'setInterval',
+  'clearInterval',
+  'setTimeout',
+  'clearTimeout',
+] as const
+
 beforeEach(() => {
   // useTodos persiste en localStorage: aísla cada test
   window.localStorage.clear()
+  vi.clearAllMocks()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 async function addTask(user: User, title: string): Promise<void> {
@@ -161,5 +183,72 @@ describe('integración App: ToDo + Pomodoro', () => {
       'aria-pressed',
       'false',
     )
+  })
+})
+
+describe('integración App: feedback en segundo plano', () => {
+  // Con reloj falso se usa fireEvent (síncrono): user-event espera timers
+  // reales. La interacción realista con user-event ya cubren los tests anteriores.
+  it('el título de la pestaña sigue al temporizador mientras corre', () => {
+    vi.useFakeTimers({ toFake: [...TIMER_FAKES] })
+    render(<App />)
+
+    // Al montar: marca por defecto
+    expect(document.title).toBe('To-Do + Pomodoro')
+
+    // Al iniciar: tiempo y modo
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Iniciar el temporizador' }),
+    )
+    expect(document.title).toBe('(25:00) ¡A trabajar! | To-Do + Pomodoro')
+
+    // El título descuenta con el reloj
+    act(() => {
+      vi.advanceTimersByTime(15_000)
+    })
+    expect(document.title).toBe('(24:45) ¡A trabajar! | To-Do + Pomodoro')
+
+    // Al pausar vuelve a la marca por defecto
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Pausar el temporizador' }),
+    )
+    expect(document.title).toBe('To-Do + Pomodoro')
+  })
+
+  it('suena la campanilla exactamente al completarse el ciclo', () => {
+    vi.useFakeTimers({ toFake: [...TIMER_FAKES] })
+    render(<App />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Iniciar el temporizador' }),
+    )
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(playChime).not.toHaveBeenCalled()
+
+    // Completar el ciclo WORK (25 min en total)
+    act(() => {
+      vi.advanceTimersByTime((25 * 60 - 1) * 1000)
+    })
+
+    // Una sola campanilla, en el instante exacto del 00:00
+    expect(playChime).toHaveBeenCalledTimes(1)
+
+    // Y la app queda en descanso corto, detenida, con el título por defecto
+    expect(screen.getByRole('timer')).toHaveTextContent('05:00')
+    expect(document.title).toBe('To-Do + Pomodoro')
+  })
+
+  it('el primer gesto del usuario desbloquea el audio (política de autoplay)', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    expect(markUserInteraction).not.toHaveBeenCalled()
+
+    // Cualquier interacción sirve como gesto de desbloqueo
+    await user.click(screen.getByRole('button', { name: 'Descanso corto' }))
+
+    expect(markUserInteraction).toHaveBeenCalled()
   })
 })
