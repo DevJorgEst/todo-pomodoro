@@ -1,122 +1,135 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useRef } from 'react'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { PomodoroTimer } from './components/pomodoro/PomodoroTimer'
+import { TodoFilters } from './components/todo/TodoFilters'
+import { TodoInput } from './components/todo/TodoInput'
+import { TodoList } from './components/todo/TodoList'
+import { TodoStats } from './components/todo/TodoStats'
+import { usePomodoro } from './hooks/usePomodoro'
+import { useTodos } from './hooks/useTodos'
+import { markUserInteraction, playChime } from './utils/feedback'
+import { TODO_FILTER_LABELS } from './types/todo'
+import { buildDocumentTitle, DEFAULT_TITLE } from './utils/title'
+
+export default function App() {
+  const {
+    filteredTodos,
+    filter,
+    counts,
+    addTodo,
+    toggleTodo,
+    removeTodo,
+    clearCompleted,
+    setFilter,
+    todos,
+  } = useTodos()
+
+  const {
+    timeLeft,
+    mode,
+    isRunning,
+    sessionsCompleted,
+    completedCycles,
+    currentTaskId,
+    start,
+    pause,
+    reset,
+    linkTask,
+    selectMode,
+  } = usePomodoro()
+
+  // Título de la pestaña: sigue al temporizador mientras corre y vuelve a la
+  // marca por defecto al pausar o al terminar un ciclo
+  useEffect(() => {
+    document.title = buildDocumentTitle(isRunning, timeLeft, mode)
+
+    return () => {
+      document.title = DEFAULT_TITLE
+    }
+  }, [isRunning, timeLeft, mode])
+
+  // Campanilla exactamente cuando el contador llega a 00:00 (fin de ciclo)
+  const previousCyclesRef = useRef(completedCycles)
+  useEffect(() => {
+    if (completedCycles > previousCyclesRef.current) playChime()
+    previousCyclesRef.current = completedCycles
+  }, [completedCycles])
+
+  // Autoplay: los navegadores solo permiten audio tras un gesto del usuario
+  useEffect(() => {
+    const unlock = () => markUserInteraction()
+
+    window.addEventListener('pointerdown', unlock, { once: true })
+    window.addEventListener('keydown', unlock, { once: true })
+
+    return () => {
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('keydown', unlock)
+    }
+  }, [])
+
+  const linkedTaskTitle =
+    todos.find((todo) => todo.id === currentTaskId)?.title ?? null
+
+  function handleSelectTask(taskId: string): void {
+    // Volver a pulsar la tarea activa la desenlaza del Pomodoro
+    linkTask(taskId === currentTaskId ? null : taskId)
+  }
+
+  function handleRemoveTask(taskId: string): void {
+    removeTodo(taskId)
+    if (taskId === currentTaskId) linkTask(null)
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+    <div className="min-h-screen bg-slate-100 px-4 py-10">
+      <div className="mx-auto w-full max-w-4xl">
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            To-Do + Pomodoro
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Organiza tus tareas y trabaja en bloques concentrados.
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+        </header>
 
-      <div className="ticks"></div>
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+          <PomodoroTimer
+            timeLeft={timeLeft}
+            mode={mode}
+            isRunning={isRunning}
+            sessionsCompleted={sessionsCompleted}
+            currentTaskTitle={linkedTaskTitle}
+            onStart={start}
+            onPause={pause}
+            onReset={reset}
+            onSelectMode={selectMode}
+          />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <main className="space-y-4">
+            <TodoInput onAdd={addTodo} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+            <TodoList
+              todos={filteredTodos}
+              filterLabel={TODO_FILTER_LABELS[filter]}
+              activeTaskId={currentTaskId}
+              onToggle={toggleTodo}
+              onRemove={handleRemoveTask}
+              onSelectTask={handleSelectTask}
+            />
+
+            <TodoStats counts={counts} onClearCompleted={clearCompleted} />
+
+            <div className="flex justify-center pt-1">
+              <TodoFilters
+                filter={filter}
+                counts={counts}
+                onChange={setFilter}
+              />
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
   )
 }
-
-export default App

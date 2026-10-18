@@ -1,32 +1,23 @@
-# React + TypeScript + Vite
+# To-Do List + Pomodoro
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicación web de tareas con temporizador Pomodoro.
 
-Currently, two official plugins are available:
+- **Stack:** React 19 + TypeScript + Vite + Tailwind CSS v3
+- **Calidad:** ESLint (flat config) + Prettier
+- **Flujo de ramas:** Git Flow (`main` → `develop` → `feature/*`)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Comandos
 
-## React Compiler
+> Gestor de paquetes: **pnpm** (`packageManager` declarado en `package.json`).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+| Comando             | Descripción                         |
+| ------------------- | ----------------------------------- |
+| `pnpm dev`          | Servidor de desarrollo con HMR      |
+| `pnpm build`        | Type-check + build de producción    |
+| `pnpm lint`         | Analiza el código con ESLint        |
+| `pnpm lint:fix`     | Corrige errores automáticos         |
+| `pnpm format`       | Formatea el código con Prettier     |
+| `pnpm format:check` | Verifica el formato sin escribir    |
+| `pnpm preview`      | Previsualiza el build de producción |
+| `pnpm test`         | Ejecuta los tests (Vitest, 1 vez)   |
+| `pnpm test:watch`   | Ejecuta los tests en modo watch     |
