@@ -19,3 +19,5 @@ Aplicación web de tareas con temporizador Pomodoro.
 | `pnpm format`       | Formatea el código con Prettier     |
 | `pnpm format:check` | Verifica el formato sin escribir    |
 | `pnpm preview`      | Previsualiza el build de producción |
+| `pnpm test`         | Ejecuta los tests (Vitest, 1 vez)   |
+| `pnpm test:watch`   | Ejecuta los tests en modo watch     |
