@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import type { PomodoroState } from '../types/pomodoro'
+import type { PomodoroMode, PomodoroState } from '../types/pomodoro'
 import {
   computeTimeLeft,
   durationOf,
@@ -58,6 +58,11 @@ export interface UsePomodoroActions {
   reset: () => void
   /** Enlaza (o desenlaza con null) la tarea del ToDo asociada al Pomodoro. */
   linkTask: (taskId: string | null) => void
+  /**
+   * Cambio manual de modo: fija el tiempo completo del modo elegido y detiene
+   * el temporizador. Conserva sesiones completadas y tarea enlazada.
+   */
+  selectMode: (mode: PomodoroMode) => void
 }
 
 export type UsePomodoroResult = PomodoroState & UsePomodoroActions
@@ -134,5 +139,15 @@ export function usePomodoro(): UsePomodoroResult {
     setState((previous) => ({ ...previous, currentTaskId: taskId }))
   }, [])
 
-  return { ...state, start, pause, reset, linkTask }
+  const selectMode = useCallback((nextMode: PomodoroMode) => {
+    anchorRef.current = null
+    setState((previous) => ({
+      ...previous,
+      mode: nextMode,
+      timeLeft: durationOf(nextMode),
+      isRunning: false,
+    }))
+  }, [])
+
+  return { ...state, start, pause, reset, linkTask, selectMode }
 }
