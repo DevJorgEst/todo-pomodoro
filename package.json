@@ -1,7 +1,7 @@
 {
   "name": "todo-pomodoro",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.3",
   "type": "module",
   "packageManager": "pnpm@12.14.0",
   "scripts": {
