@@ -8,12 +8,14 @@ Aplicación web de tareas con temporizador Pomodoro.
 
 ## Comandos
 
-| Comando                | Descripción                         |
-| ---------------------- | ----------------------------------- |
-| `npm run dev`          | Servidor de desarrollo con HMR      |
-| `npm run build`        | Type-check + build de producción    |
-| `npm run lint`         | Analiza el código con ESLint        |
-| `npm run lint:fix`     | Corrige errores automáticos         |
-| `npm run format`       | Formatea el código con Prettier     |
-| `npm run format:check` | Verifica el formato sin escribir    |
-| `npm run preview`      | Previsualiza el build de producción |
+> Gestor de paquetes: **pnpm** (`packageManager` declarado en `package.json`).
+
+| Comando             | Descripción                         |
+| ------------------- | ----------------------------------- |
+| `pnpm dev`          | Servidor de desarrollo con HMR      |
+| `pnpm build`        | Type-check + build de producción    |
+| `pnpm lint`         | Analiza el código con ESLint        |
+| `pnpm lint:fix`     | Corrige errores automáticos         |
+| `pnpm format`       | Formatea el código con Prettier     |
+| `pnpm format:check` | Verifica el formato sin escribir    |
+| `pnpm preview`      | Previsualiza el build de producción |
