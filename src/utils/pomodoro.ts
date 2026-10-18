@@ -37,3 +37,11 @@ export function computeTimeLeft(
 export function durationOf(mode: PomodoroMode): number {
   return POMODORO_DURATIONS[mode]
 }
+
+/** Formatea segundos como contador digital MM:SS (ej. 1500 -> "25:00"). */
+export function formatTime(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}

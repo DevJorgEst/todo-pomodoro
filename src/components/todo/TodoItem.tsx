@@ -2,18 +2,27 @@ import type { Todo } from '../../types/todo'
 
 interface TodoItemProps {
   todo: Todo
+  /** Indica si esta tarea es la enlazada al temporizador Pomodoro. */
+  isActiveTask: boolean
   onToggle: (id: string) => void
   onRemove: (id: string) => void
+  onSelect: (id: string) => void
 }
 
-export function TodoItem({ todo, onToggle, onRemove }: TodoItemProps) {
+export function TodoItem({
+  todo,
+  isActiveTask,
+  onToggle,
+  onRemove,
+  onSelect,
+}: TodoItemProps) {
   const checkboxId = `todo-${todo.id}`
 
   return (
     <li
-      className={`group flex items-center gap-3 px-4 py-3 transition ${
+      className={`group flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 transition ${
         todo.completed ? 'bg-slate-50' : 'bg-white'
-      }`}
+      } ${isActiveTask ? 'ring-1 ring-inset ring-amber-300' : ''}`}
     >
       <input
         id={checkboxId}
@@ -34,6 +43,20 @@ export function TodoItem({ todo, onToggle, onRemove }: TodoItemProps) {
       >
         {todo.title}
       </label>
+
+      <button
+        type="button"
+        onClick={() => onSelect(todo.id)}
+        aria-pressed={isActiveTask}
+        aria-label={`Establecer "${todo.title}" como tarea activa del Pomodoro`}
+        className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+          isActiveTask
+            ? 'bg-amber-100 text-amber-800'
+            : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'
+        }`}
+      >
+        {isActiveTask ? '✓ En el Pomodoro' : 'Cronometrar'}
+      </button>
 
       <button
         type="button"

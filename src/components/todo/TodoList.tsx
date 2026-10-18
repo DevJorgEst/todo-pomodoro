@@ -4,15 +4,20 @@ import { TodoItem } from './TodoItem'
 interface TodoListProps {
   todos: Todo[]
   filterLabel: string
+  /** Id de la tarea enlazada al Pomodoro, si la hay. */
+  activeTaskId: string | null
   onToggle: (id: string) => void
   onRemove: (id: string) => void
+  onSelectTask: (id: string) => void
 }
 
 export function TodoList({
   todos,
   filterLabel,
+  activeTaskId,
   onToggle,
   onRemove,
+  onSelectTask,
 }: TodoListProps) {
   if (todos.length === 0) {
     return (
@@ -28,8 +33,10 @@ export function TodoList({
         <TodoItem
           key={todo.id}
           todo={todo}
+          isActiveTask={todo.id === activeTaskId}
           onToggle={onToggle}
           onRemove={onRemove}
+          onSelect={onSelectTask}
         />
       ))}
     </ul>

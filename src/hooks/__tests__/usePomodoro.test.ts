@@ -304,3 +304,47 @@ describe('usePomodoro › regla de negocio nextPomodoroMode', () => {
     expect(nextPomodoroMode('LONG_BREAK', 4)).toBe('WORK')
   })
 })
+
+describe('usePomodoro › selectMode', () => {
+  it('permite forzar un modo manualmente y fija su duración completa', () => {
+    const { result } = renderPomodoro()
+    act(() => {
+      result.current.start()
+    })
+    act(() => {
+      vi.advanceTimersByTime(5000)
+    })
+
+    act(() => {
+      result.current.selectMode('SHORT_BREAK')
+    })
+
+    expect(result.current.mode).toBe('SHORT_BREAK')
+    expect(result.current.timeLeft).toBe(SHORT_BREAK_SECONDS)
+    expect(result.current.isRunning).toBe(false)
+
+    // Detenido: aunque pase el tiempo no descuenta
+    act(() => {
+      vi.advanceTimersByTime(10_000)
+    })
+    expect(result.current.timeLeft).toBe(SHORT_BREAK_SECONDS)
+  })
+
+  it('conserva las sesiones completadas y la tarea enlazada', () => {
+    const { result } = renderPomodoro()
+    act(() => {
+      result.current.linkTask('task-9')
+    })
+    reachLongBreak(result)
+    expect(result.current.sessionsCompleted).toBe(4)
+
+    act(() => {
+      result.current.selectMode('WORK')
+    })
+
+    expect(result.current.mode).toBe('WORK')
+    expect(result.current.timeLeft).toBe(WORK_SECONDS)
+    expect(result.current.sessionsCompleted).toBe(4)
+    expect(result.current.currentTaskId).toBe('task-9')
+  })
+})
