@@ -32,7 +32,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  vi.useRealTimers(); vi.restoreAllMocks();
+  vi.useRealTimers()
+  vi.restoreAllMocks()
 })
 
 async function addTask(user: User, title: string): Promise<void> {

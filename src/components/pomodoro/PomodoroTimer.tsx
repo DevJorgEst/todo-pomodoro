@@ -86,7 +86,7 @@ export function PomodoroTimer({
       className={`rounded-2xl border-2 p-6 shadow-sm transition-colors duration-300 ${style.panel}`}
     >
       <header className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
+        <h2 className="text-sm font-semibold tracking-wide text-zinc-600 uppercase dark:text-zinc-400">
           Pomodoro
         </h2>
 
@@ -104,7 +104,7 @@ export function PomodoroTimer({
       <p
         role="timer"
         aria-atomic="true"
-        className="mt-5 text-center text-6xl font-bold tabular-nums text-zinc-900 dark:text-zinc-100"
+        className="mt-5 text-center text-6xl font-bold text-zinc-900 tabular-nums dark:text-zinc-100"
       >
         {formatTime(timeLeft)}
       </p>

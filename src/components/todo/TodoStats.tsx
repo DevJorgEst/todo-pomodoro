@@ -23,7 +23,7 @@ export function TodoStats({ counts, onClearCompleted }: TodoStatsProps) {
         type="button"
         onClick={onClearCompleted}
         disabled={counts.completed === 0}
-        className="text-xs text-zinc-500 underline-offset-2 transition hover:text-zinc-900 hover:underline focus:outline-none focus:ring-2 focus:ring-zinc-400 disabled:cursor-not-allowed disabled:no-underline disabled:opacity-40 dark:text-zinc-400 dark:hover:text-zinc-100 dark:focus:ring-zinc-500"
+        className="text-xs text-zinc-500 underline-offset-2 transition hover:text-zinc-900 hover:underline focus:ring-2 focus:ring-zinc-400 focus:outline-none disabled:cursor-not-allowed disabled:no-underline disabled:opacity-40 dark:text-zinc-400 dark:hover:text-zinc-100 dark:focus:ring-zinc-500"
       >
         Limpiar completadas ({counts.completed})
       </button>
