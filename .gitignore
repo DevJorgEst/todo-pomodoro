@@ -79,3 +79,8 @@ Desktop.ini
 *.sw?
 *.swo
 *~
+
+# --- Artefactos de compilación ---------------------------------------------
+# La fuente canónica en src/ es .ts/.tsx: los .js son salida de tsc y no se
+# versionan (si aparecen de nuevo, borrarlos y no hacerles commit)
+src/**/*.js
