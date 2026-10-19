@@ -32,6 +32,7 @@ export function TodoItem({
         type="checkbox"
         checked={todo.completed}
         onChange={() => onToggle(todo.id)}
+        data-todo-checkbox=""
         aria-label={`Marcar "${todo.title}" como ${
           todo.completed ? 'pendiente' : 'completada'
         }`}
@@ -53,7 +54,11 @@ export function TodoItem({
         type="button"
         onClick={() => onSelect(todo.id)}
         aria-pressed={isActiveTask}
-        aria-label={`Establecer "${todo.title}" como tarea activa del Pomodoro`}
+        aria-label={
+          isActiveTask
+            ? `En el Pomodoro: dejar de cronometrar "${todo.title}"`
+            : `Cronometrar "${todo.title}"`
+        }
         className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors focus:ring-2 focus:ring-amber-500 focus:outline-none dark:focus:ring-amber-400 ${
           isActiveTask
             ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/40 dark:text-amber-300'
