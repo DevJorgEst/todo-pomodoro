@@ -1,9 +1,9 @@
-import type { Todo } from '../../types/todo'
+import type { Todo, TodoFilter } from '../../types/todo'
 import { TodoItem } from './TodoItem'
 
 interface TodoListProps {
   todos: Todo[]
-  filterLabel: string
+  filter: TodoFilter
   /** Id de la tarea enlazada al Pomodoro, si la hay. */
   activeTaskId: string | null
   onToggle: (id: string) => void
@@ -11,9 +11,19 @@ interface TodoListProps {
   onSelectTask: (id: string) => void
 }
 
+/**
+ * Mensaje de lista vacía por filtro. Cada caso dice qué pasa y qué hacer, en
+ * lugar de concatenar la etiqueta del filtro ("No hay tareas todas").
+ */
+const EMPTY_MESSAGES: Record<TodoFilter, string> = {
+  all: 'Aún no hay tareas. Añade la primera para empezar.',
+  active: 'No quedan tareas pendientes. Buen trabajo.',
+  completed: 'Todavía no has completado ninguna tarea.',
+}
+
 export function TodoList({
   todos,
-  filterLabel,
+  filter,
   activeTaskId,
   onToggle,
   onRemove,
@@ -21,14 +31,14 @@ export function TodoList({
 }: TodoListProps) {
   if (todos.length === 0) {
     return (
-      <p className="px-4 py-10 text-center text-sm text-zinc-400 dark:text-zinc-500">
-        No hay tareas {filterLabel.toLowerCase()}.
+      <p className="rounded-lg border border-dashed border-zinc-300 px-4 py-10 text-center text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+        {EMPTY_MESSAGES[filter]}
       </p>
     )
   }
 
   return (
-    <ul className="divide-y divide-zinc-100 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:divide-zinc-700 dark:border-zinc-700 dark:bg-zinc-800">
+    <ul className="divide-y divide-zinc-200 overflow-hidden rounded-lg border border-zinc-300 bg-white shadow-sm dark:divide-zinc-700 dark:border-zinc-700 dark:bg-zinc-800">
       {todos.map((todo) => (
         <TodoItem
           key={todo.id}

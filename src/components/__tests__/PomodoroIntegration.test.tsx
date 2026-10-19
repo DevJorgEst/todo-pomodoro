@@ -138,7 +138,9 @@ describe('integración App: ToDo + Pomodoro', () => {
     )
 
     // …las estadísticas se actualizan…
-    expect(screen.getByText('¡Todo completado! 🎉')).toBeInTheDocument()
+    expect(
+      screen.getByText('Todo completado. Buen trabajo.'),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /Limpiar completadas/ }),
     ).toBeInTheDocument()
@@ -163,7 +165,9 @@ describe('integración App: ToDo + Pomodoro', () => {
     // Sin rastro de la tarea ni en la lista ni en el temporizador
     expect(screen.queryByText('Tarea efímera')).not.toBeInTheDocument()
     expect(screen.getByText(NEUTRAL_TASK_MESSAGE)).toBeInTheDocument()
-    expect(screen.getByText(/No hay tareas todas/)).toBeInTheDocument()
+    expect(
+      screen.getByText('Aún no hay tareas. Añade la primera para empezar.'),
+    ).toBeInTheDocument()
   })
 
   it('el selector de modo manual cambia el temporizador y su aspecto', async () => {
@@ -184,6 +188,77 @@ describe('integración App: ToDo + Pomodoro', () => {
       'aria-pressed',
       'false',
     )
+  })
+})
+
+describe('integración App: estados vacíos', () => {
+  it('sin tareas no felicita ni muestra un recuento vacío', () => {
+    render(<App />)
+
+    // El copy no concatena el filtro ("No hay tareas todas") ni celebra 0 tareas
+    expect(
+      screen.getByText('Aún no hay tareas. Añade la primera para empezar.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Todo completado/)).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Limpiar completadas/ }),
+    ).toBeDisabled()
+  })
+
+  it('con el filtro de completadas y ninguna hecha, guía sin sonar a error', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Completadas (0)' }))
+
+    expect(
+      screen.getByText('Todavía no has completado ninguna tarea.'),
+    ).toBeInTheDocument()
+  })
+
+  it('al completar todas las tareas lo celebra y ofrece limpiar', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await addTask(user, 'Única tarea')
+    await user.click(
+      screen.getByRole('checkbox', {
+        name: 'Marcar "Única tarea" como completada',
+      }),
+    )
+
+    expect(
+      screen.getByText('Todo completado. Buen trabajo.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Limpiar completadas (1)' }),
+    ).toBeEnabled()
+  })
+})
+
+describe('integración App: enlace del Pomodoro huérfano', () => {
+  it('limpiar completadas desenlaza la tarea que estaba en el Pomodoro', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await addTask(user, 'Tarea a limpiar')
+    await user.click(getTaskAction('Tarea a limpiar'))
+    expect(
+      within(getTimerRegion()).getByText('Tarea a limpiar'),
+    ).toBeInTheDocument()
+
+    // Completar y limpiar: la tarea desaparece de la lista y del temporizador
+    await user.click(
+      screen.getByRole('checkbox', {
+        name: 'Marcar "Tarea a limpiar" como completada',
+      }),
+    )
+    await user.click(
+      screen.getByRole('button', { name: 'Limpiar completadas (1)' }),
+    )
+
+    expect(screen.queryByText('Tarea a limpiar')).not.toBeInTheDocument()
+    expect(screen.getByText(NEUTRAL_TASK_MESSAGE)).toBeInTheDocument()
   })
 })
 

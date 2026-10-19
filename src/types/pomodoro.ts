@@ -10,6 +10,13 @@ export const POMODORO_DURATIONS: Record<PomodoroMode, number> = {
 /** Número de sesiones de trabajo tras el que se concede un descanso largo. */
 export const LONG_BREAK_EVERY = 4
 
+/** Etiquetas visibles de cada modo (fuente única para UI y anuncios). */
+export const POMODORO_MODE_LABELS: Record<PomodoroMode, string> = {
+  WORK: 'Trabajo',
+  SHORT_BREAK: 'Descanso corto',
+  LONG_BREAK: 'Descanso largo',
+}
+
 export interface PomodoroState {
   /** Segundos restantes del ciclo actual. */
   timeLeft: number
