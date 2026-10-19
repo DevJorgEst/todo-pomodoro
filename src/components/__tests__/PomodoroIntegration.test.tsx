@@ -46,12 +46,15 @@ function getTimerRegion(): HTMLElement {
 }
 
 /**
- * El botón de enlace usa `aria-label` propio (anula el texto visible), así que
- * el nombre accesible es el mismo en estado inactivo y activo.
+ * El botón de enlace cambia de nombre con el estado —el texto visible también
+ * cambia ("Cronometrar" ↔ "En el Pomodoro")— y el nombre accesible incluye
+ * siempre ese texto visible para cumplir "Label in Name" (WCAG 2.5.3).
  */
-function getTaskAction(title: string): HTMLElement {
+function getTaskAction(title: string, active = false): HTMLElement {
   return screen.getByRole('button', {
-    name: `Establecer "${title}" como tarea activa del Pomodoro`,
+    name: active
+      ? `En el Pomodoro: dejar de cronometrar "${title}"`
+      : `Cronometrar "${title}"`,
   })
 }
 
@@ -85,10 +88,29 @@ describe('integración App: ToDo + Pomodoro', () => {
     expect(screen.queryByText(NEUTRAL_TASK_MESSAGE)).not.toBeInTheDocument()
 
     // Y el botón de la tarea queda como activo (aria-pressed)
-    expect(getTaskAction('Preparar la demo')).toHaveAttribute(
+    expect(getTaskAction('Preparar la demo', true)).toHaveAttribute(
       'aria-pressed',
       'true',
     )
+  })
+
+  it('el nombre accesible del botón de enlace incluye su texto visible', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await addTask(user, 'Tarea demo')
+
+    // Inactivo: se ofrece "Cronometrar" y el nombre contiene ese texto
+    const inactive = getTaskAction('Tarea demo')
+    expect(inactive).toHaveTextContent('Cronometrar')
+    expect(inactive.getAttribute('aria-label')).toContain('Cronometrar')
+
+    await user.click(inactive)
+
+    // Activo: el texto es "En el Pomodoro" y el nombre lo contiene
+    const active = getTaskAction('Tarea demo', true)
+    expect(active).toHaveTextContent('En el Pomodoro')
+    expect(active.getAttribute('aria-label')).toContain('En el Pomodoro')
   })
 
   it('volver a pulsar el botón de la tarea activa desenlaza el Pomodoro', async () => {
@@ -101,7 +123,7 @@ describe('integración App: ToDo + Pomodoro', () => {
       within(getTimerRegion()).getByText('Llamar al dentista'),
     ).toBeInTheDocument()
 
-    await user.click(getTaskAction('Llamar al dentista'))
+    await user.click(getTaskAction('Llamar al dentista', true))
 
     expect(screen.getByText(NEUTRAL_TASK_MESSAGE)).toBeInTheDocument()
     expect(getTaskAction('Llamar al dentista')).toHaveAttribute(
@@ -168,6 +190,30 @@ describe('integración App: ToDo + Pomodoro', () => {
     expect(
       screen.getByText('Aún no hay tareas. Añade la primera para empezar.'),
     ).toBeInTheDocument()
+
+    // Sin tareas que enfocar, el foco vuelve al campo de nueva tarea
+    expect(document.activeElement).toBe(
+      screen.getByRole('textbox', { name: 'Nueva tarea' }),
+    )
+  })
+
+  it('al eliminar una tarea el foco pasa a la que ocupa su lugar', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await addTask(user, 'Primera')
+    await addTask(user, 'Segunda')
+
+    // La última añadida va primero: [Segunda, Primera]
+    await user.click(
+      screen.getByRole('button', { name: 'Eliminar tarea "Segunda"' }),
+    )
+
+    expect(document.activeElement).toBe(
+      screen.getByRole('checkbox', {
+        name: 'Marcar "Primera" como completada',
+      }),
+    )
   })
 
   it('el selector de modo manual cambia el temporizador y su aspecto', async () => {
@@ -259,6 +305,11 @@ describe('integración App: enlace del Pomodoro huérfano', () => {
 
     expect(screen.queryByText('Tarea a limpiar')).not.toBeInTheDocument()
     expect(screen.getByText(NEUTRAL_TASK_MESSAGE)).toBeInTheDocument()
+
+    // Al deshabilitarse el botón de limpiar, el foco no se queda en <body>
+    expect(document.activeElement).toBe(
+      screen.getByRole('textbox', { name: 'Nueva tarea' }),
+    )
   })
 })
 

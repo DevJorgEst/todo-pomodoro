@@ -55,7 +55,7 @@ El sistema de notificaciones acústicas prescinde de peticiones de red tradicion
 | `pnpm format:check` | Verificación de estilo sin escribir ficheros.                |
 | `pnpm build`        | `tsc -b && vite build` → artefacto de producción en `dist/`. |
 
-La suite cubre **72 tests en 8 ficheros** con dos niveles de aislamiento:
+La suite cubre **74 tests en 8 ficheros** con dos niveles de aislamiento:
 
 1. **Unitarios deterministas:** el motor Pomodoro se valida con reloj falso (`vi.useFakeTimers({ toFake: [...] })`), congelando `Date` y los timers para verificar derivas, cambios de fase y el resync en segundo plano.
 2. **Integración de UI:** `@testing-library/react` + `user-event` sobre jsdom, verificando el flujo real de interacción (crear, completar, filtrar) y el ciclo completo de Pomodoro, incluida la campanilla sintetizada.
@@ -66,6 +66,6 @@ La suite cubre **72 tests en 8 ficheros** con dos niveles de aislamiento:
 
 La infraestructura de despliegue opera como un cerrojo de seguridad automatizado mediante **GitHub Actions** (`.github/workflows/ci.yml`).
 
-- **Failsafe Pipeline:** Cada push o pull request a `main` o `develop` dispara un job que ejecuta `pnpm audit --prod`, valida linter/formato, corre los 72 tests y compila el proyecto. Si un test falla o hay una CVE de producción, el despliegue se cancela.
+- **Failsafe Pipeline:** Cada push o pull request a `main` o `develop` dispara un job que ejecuta `pnpm audit --prod`, valida linter/formato, corre los 74 tests y compila el proyecto. Si un test falla o hay una CVE de producción, el despliegue se cancela.
 - **Métricas de Producción:** El bundle final estático está ultra optimizado a través de _Tree-shaking_ agresivo:
-  - **JS + CSS + HTML combinados:** ~262 KB totales (Apenas **77.8 KB Gzip** transferidos al cliente).
+  - **JS + CSS + HTML combinados:** ~269 KB totales (**~81 KB Gzip** transferidos al cliente).
